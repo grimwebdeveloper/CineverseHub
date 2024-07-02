@@ -7,8 +7,8 @@
 }
 
 :root {
-  --color-primary: #020617;
-  --color-secondary: #eab308;
+  --color-primary: #020d18;
+  --color-secondary: #f1c40f;
 }
 
 body {
@@ -94,7 +94,7 @@ ul {
   color: #fff;
   font-size: 25px;
   font-weight: 700;
-  /* text-transform: uppercase; */
+  text-transform: uppercase;
 }
 
 .main-header ul {
@@ -124,7 +124,6 @@ ul {
 .card {
   background: #04376b;
   padding: 5px;
-  /* border-radius: 5px; */
 }
 
 .card img {
@@ -159,7 +158,7 @@ ul {
   color: #fff;
   font-size: 25px;
   font-weight: 700;
-  /* text-transform: uppercase; */
+  text-transform: uppercase;
 }
 
 .main-footer .container .social-links {
