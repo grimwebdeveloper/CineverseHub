@@ -2,6 +2,7 @@ const global = {
   currentPage: window.location.pathname,
 };
 
+// This function will display the popular movies on the home page. It fetches the data from the API and creates a card for each movie with its poster, title, and release date. It also adds an event listener to the "See All Movies" button to redirect to the movies page when clicked.
 async function displayPopularMovies() {
   const { results } = await fetchAPIData('movie/popular');
   console.log('Result:', results);
@@ -31,6 +32,7 @@ async function displayPopularMovies() {
   });
 }
 
+// This function will display the popular TV shows on the home page. It fetches the data from the API and creates a card for each show with its poster, title, and air date. It also adds an event listener to the "See All Shows" button to redirect to the shows page when clicked.
 async function displayPopularShows() {
   const { results } = await fetchAPIData('tv/popular');
   console.log('Result:', results);
@@ -40,7 +42,7 @@ async function displayPopularShows() {
     div.classList.add('card');
 
     div.innerHTML = `
-            <a href="tv-details.html?id=${show.id}">
+    <a href="tv-details.html?id=${show.id}">
                 ${
                   show.poster_path
                     ? `<img src="http://image.tmdb.org/t/p/w500${show.poster_path}" class="card-img-top" alt="${show.name}" />`
@@ -60,6 +62,91 @@ async function displayPopularShows() {
   });
 }
 
+async function displayMovieDetails() {
+  const movieId = window.location.search.split('=')[1];
+  console.log(movieId);
+  const movie = await fetchAPIData(`movie/${movieId}`);
+  console.log('Movie:', movie);
+  displayBackgroundImage('movie', movie.backdrop_path); // Set the background image for the movie details page
+  const div = document.createElement('div');
+  div.innerHTML = `
+  <div class="details-top">
+          <div>
+          ${
+            movie.poster_path
+              ? `<img
+                src="http://image.tmdb.org/t/p/w500${movie.poster_path}"
+                class="card-img-top"
+                alt="${movie.title}"
+              />`
+              : `<img
+              src="images/no-image.jpg"
+              class="card-img-top"
+              alt="${movie.title}"
+            />`
+          }
+
+          </div>
+          <div>
+            <h2>${movie.title}"</h2>
+            <p>
+              <i class="fas fa-star text-primary"></i>
+              ${movie.vote_average.toFixed(1)} / 10
+            </p>
+            <p class="text-muted">Release Date: ${movie.release_date}</p>
+            <p>${movie.overview}</p>
+            <h5>Genres</h5>
+            <ul class="list-group">
+            ${movie.genres.map((genre) => `<li>${genre.name}</li>`).join('')}
+            </ul>
+            <a href=${
+              movie.homepage
+            } target="_blank" class="btn">Visit Movie Homepage</a>
+          </div>
+        </div>
+        <div class="details-bottom">
+          <h2>Movie Info</h2>
+          <ul>
+            <li><span class="text-secondary">Budget:</span> $${movie.budget
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</li>
+            <li><span class="text-secondary">Revenue:</span> $${movie.revenue
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</li>
+            <li><span class="text-secondary">Runtime:</span> ${
+              movie.runtime
+            } minutes</li>
+            <li><span class="text-secondary">Status:</span> ${movie.status}</li>
+          </ul>
+          <h4>Production Companies</h4>
+          <div class="list-group">${movie.production_companies
+            .map((company) => company.name)
+            .join(' ')}</div>
+        </div>
+  `;
+  document.querySelector('#movie-details').appendChild(div);
+}
+
+function displayBackgroundImage(type, backgroundPath) {
+  const overlayDiv = document.createElement('div')
+  overlayDiv.style.backgroundImage = `url(https://image.tmdb.org/t/p/original/${backgroundPath})`
+  overlayDiv.style.backgroundSize = 'cover';
+  overlayDiv.style.backgroundPosition = 'center';
+  overlayDiv.style.backgroundRepeat = 'no-repeat';
+  overlayDiv.style.height = '100vh';
+  overlayDiv.style.width = '100vw';
+  overlayDiv.style.position = 'absolute';
+  overlayDiv.style.top = '0';
+  overlayDiv.style.left = '0';
+  overlayDiv.style.zIndex = '-1';
+  overlayDiv.style.opacity = '0.1';
+  if (type === 'movie') {
+    document.querySelector('#movie-details').appendChild(overlayDiv);
+  } else {
+    document.querySelector('#show-details').appendChild(overlayDiv);
+  }
+}
+
 // This function will fetch data from the API using the provided endpoint. It constructs the URL with the API key and language parameters and returns the parsed JSON data.
 async function fetchAPIData(endpoint) {
   const API_KEY = '8e910b8001b97796872ce25e3010e43b';
@@ -70,7 +157,7 @@ async function fetchAPIData(endpoint) {
   );
   const data = await response.json();
   hideSpinner(); // Hide the spinner after fetching data
-  return data;  
+  return data;
 }
 
 function showSpinner() {
@@ -105,6 +192,7 @@ function init() {
       break;
     case '/movie-details.html':
       console.log('Movie Details Page');
+      displayMovieDetails();
       break;
     case '/tv-details.html':
       console.log('TV Details Page');
