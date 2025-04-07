@@ -1,5 +1,15 @@
 const global = {
   currentPage: window.location.pathname,
+  search: {
+    term: '',
+    type: '',
+    page: 1,
+    totalPage: 1,
+  },
+  api: {
+    key: '8e910b8001b97796872ce25e3010e43b',
+    url: 'https://api.themoviedb.org/3',
+  },
 };
 
 // This function will display the popular movies on the home page. It fetches the data from the API and creates a card for each movie with its poster, title, and release date. It also adds an event listener to the "See All Movies" button to redirect to the movies page when clicked.
@@ -210,6 +220,22 @@ function displayBackgroundImage(type, backgroundPath) {
     document.querySelector('#show-details').appendChild(overlayDiv);
   }
 }
+async function search() {
+  const queryString = window.location.search;
+  console.log(queryString);
+  const urlParams = new URLSearchParams(queryString);
+  console.log(urlParams);
+
+  global.search.type = urlParams.get('type');
+  global.search.term = urlParams.get('search-term');
+
+  if (global.search.type !== '' && global.search.term !== null) {
+    const results = await searchAPIData();
+    console.log(results);
+  } else {
+    showAlert('Please enter a search term');
+  }
+}
 
 async function displaySlider() {
   const { results } = await fetchAPIData('movie/now_playing');
@@ -266,12 +292,38 @@ function initSwiper() {
 
 // This function will fetch data from the API using the provided endpoint. It constructs the URL with the API key and language parameters and returns the parsed JSON data.
 async function fetchAPIData(endpoint) {
-  const API_KEY = '8e910b8001b97796872ce25e3010e43b';
-  const API_URL = 'https://api.themoviedb.org/3';
+  const API_KEY = global.api.key;
+  const API_URL = global.api.url;
   showSpinner(); // Show the spinner while fetching data
 
   const response = await fetch(
     `${API_URL}/${endpoint}?api_key=${API_KEY}&language=en-US`
+  );
+  const data = await response.json();
+  hideSpinner(); // Hide the spinner after fetching data
+
+  return data;
+}
+
+function showSpinner() {
+  document.querySelector('.spinner').classList.add('show');
+}
+
+function hideSpinner() {
+  document.querySelector('.spinner').classList.remove('show');
+}
+
+async function searchAPIData() {
+  const API_KEY = global.api.key;
+  const API_URL = global.api.url;
+  showSpinner(); // Show the spinner while fetching data
+
+  const response = await fetch(
+    `${API_URL}/search/${
+      global.search.type
+    }?api_key=${API_KEY}&language=en-US&query=${encodeURIComponent(
+      global.search.term
+    )}&page=${global.search.page}`
   );
   const data = await response.json();
   hideSpinner(); // Hide the spinner after fetching data
@@ -297,6 +349,16 @@ function highlightActiveLink() {
   });
 }
 
+function showAlert(message, className = 'error') {
+  const alertEl = document.createElement('div');
+  alertEl.classList.add('alert', className);
+  alertEl.appendChild(document.createTextNode(message));
+  document.querySelector('#alert').appendChild(alertEl);
+  setTimeout(() => {
+    alertEl.remove();
+  }, 3000);
+}
+
 // Function to handle the initialization of the page. This function will run when the DOM is fully loaded
 function init() {
   switch (global.currentPage) {
@@ -320,6 +382,7 @@ function init() {
       break;
     case '/search.html':
       console.log('Search Page');
+      search();
       break;
   }
   highlightActiveLink();
